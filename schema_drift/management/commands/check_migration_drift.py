@@ -10,7 +10,8 @@ from schema_drift.drift import find_migration_drift
 class Command(BaseCommand):
     help = (
         'Apply every migration to an empty database and print the drift windows '
-        'that SCHEMA_DRIFT_BASELINE does not list, in its format.'
+        'that SCHEMA_DRIFT_BASELINE does not list, in its format. '
+        'Migrations run for real, RunPython included.'
     )
 
     def handle(self, *args: Any, **options: Any) -> None:

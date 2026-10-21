@@ -29,6 +29,9 @@ from django.db.migrations.state import ProjectState
 
 
 REFERENCE_SCHEMA = 'schema_drift_reference'
+# The snapshot locks every table it reads, and a foreign key to an unmanaged model locks its live table.
+# Waiting for a lock would queue the application's queries behind the check.
+LOCK_TIMEOUT = '2s'
 
 
 def find_drift(apps: Apps = installed_apps) -> tuple[set[str], set[str]]:
@@ -36,6 +39,7 @@ def find_drift(apps: Apps = installed_apps) -> tuple[set[str], set[str]]:
     models = [model for model in apps.get_models() if model._meta.can_migrate(connection)]
     names = [named.name for model in models for named in [*model._meta.indexes, *model._meta.constraints]]
     with transaction.atomic(), connection.cursor() as cursor:
+        cursor.execute(f"SET LOCAL lock_timeout = '{LOCK_TIMEOUT}'")
         cursor.execute('SELECT current_schema()')
         [(live_schema,)] = cursor.fetchall()
         live = _snapshot(cursor, live_schema, names)
