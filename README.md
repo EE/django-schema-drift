@@ -24,6 +24,7 @@ prints one line per difference, `-` for what only the models have and `+` for wh
 and exits non-zero if there is any.
 It is safe on a production database: everything it creates is rolled back,
 though it needs the privilege to create a schema.
+It gives up after waiting 2 s for a lock, rather than hold up the queries queued behind it.
 Index and constraint names are compared only where `Meta` gives them, since migrations drop those by name;
 Django finds the rest by their columns, so their names drift harmlessly.
 Collations, comments, triggers, functions and views are not compared.
@@ -48,8 +49,10 @@ the final schema is fine, and a database that stops in between is not.
 ./manage.py check_migration_drift
 ```
 
-applies every migration to an **empty** database (it refuses any other)
+applies every migration to an **empty** database or schema (it refuses one with tables on the search path)
 and after each compares the database with the migration state at that point.
+It runs them as `migrate` would, `RunPython` included,
+so run it with settings whose caches, storage and mail are not production's.
 It prints drift as windows:
 
 ```

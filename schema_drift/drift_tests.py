@@ -1,6 +1,7 @@
 import pytest
-from django.db import connection
+from django.db import OperationalError, connection, connections
 
+from schema_drift import drift
 from schema_drift.drift import find_drift, find_migration_drift
 
 
@@ -57,3 +58,23 @@ def test_reports_drift_a_later_migration_hides(empty_schema):
         'testapp.0002_book_isbn_too_short -> testapp.0003_book_isbn_repair '
         '- column testapp_book.isbn character varying(20) NOT NULL',
     ]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_gives_up_on_a_locked_table_instead_of_queueing(monkeypatch):
+    monkeypatch.setattr(drift, 'LOCK_TIMEOUT', '100ms')
+    other = connections.create_connection('default')
+    with other.cursor() as cursor:
+        # Releases the lock if the check waits for it after all, so the test fails instead of hanging.
+        cursor.execute("SET idle_in_transaction_session_timeout = '10s'")
+        cursor.execute('BEGIN; LOCK testapp_book')
+
+        with pytest.raises(OperationalError, match='lock timeout'):
+            find_drift()
+    other.close()
+
+
+@pytest.mark.django_db
+def test_refuses_to_replay_migrations_on_a_database_with_tables():
+    with pytest.raises(RuntimeError, match='needs an empty one'):
+        list(find_migration_drift())

@@ -11,6 +11,12 @@ The report is true and the fix belongs to the database; a README note with the c
 `SCHEMA_DRIFT_IGNORE` matches single lines,
 so a table outside Django (`createcachetable`, PostGIS `spatial_ref_sys`) takes an entry per column and index.
 
+## Locks held while the reference schema is built
+
+The live snapshot's share locks last until the rollback,
+so a `migrate` waiting on one holds up the queries queued behind it for the rest of the check.
+Taking the snapshot in a transaction of its own would release them first.
+
 ## Indexes on materialized views
 
 The index query does not filter on `relkind`, so such an index prints as `+` without its table.
