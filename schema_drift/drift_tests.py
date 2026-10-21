@@ -51,12 +51,17 @@ def test_reports_a_duplicate_index():
 
 @pytest.mark.django_db
 def test_reports_drift_a_later_migration_hides(empty_schema):
-    """The final schema is right, but a database stopped after 0002 is not."""
+    """The final schema is right, but a database stopped after 0002 or 0005 is not.
+
+    0005 has only built-in operations.
+    """
     assert list(find_migration_drift()) == [
         'testapp.0002_book_isbn_too_short -> testapp.0003_book_isbn_repair '
         '+ column testapp_book.isbn character varying(10) NOT NULL',
         'testapp.0002_book_isbn_too_short -> testapp.0003_book_isbn_repair '
         '- column testapp_book.isbn character varying(20) NOT NULL',
+        'testapp.0005_review_squashed -> testapp.0006_review_drop_leftover_index '
+        '+ index testapp_review USING btree (book_id)',
     ]
 
 
