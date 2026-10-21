@@ -1,0 +1,27 @@
+[project]
+name = "django-schema-drift"
+version = "0.1.0"
+description = "Check that a PostgreSQL schema matches the Django models, and that every migration's database operations match its state operations."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13,<4.0"
+dependencies = ["django (>=4.2,<6.0)"]
+
+[project.urls]
+Repository = "https://github.com/EE/django-schema-drift"
+
+[tool.poetry]
+packages = [{ include = "schema_drift" }]
+
+[tool.poetry.group.dev.dependencies]
+psycopg = { version = "*", extras = ["binary"] }
+pytest = "*"
+pytest-django = "*"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "testproject.settings"
+python_files = ["*_tests.py"]
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
