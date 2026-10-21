@@ -12,3 +12,7 @@ class Book(models.Model):
     class Meta:
         indexes = [models.Index(fields=['isbn'], name='book_isbn_idx')]
         constraints = [models.UniqueConstraint(fields=['author', 'isbn'], name='book_author_isbn_uniq')]
+
+
+class Review(models.Model):
+    book = models.OneToOneField(to=Book, on_delete=models.CASCADE)

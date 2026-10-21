@@ -23,14 +23,24 @@ The index query does not filter on `relkind`, so such an index prints as `+` wit
 
 ## `check_migration_drift` on long histories
 
-It compares the whole schema after every migration:
-60 models and 300 migrations take 121 s, against 4.5 s for `migrate`.
-Only migrations with `RunSQL`, `RunPython`, `SeparateDatabaseAndState` or custom operations, and the last one,
-need comparing.
+It compares the whole schema after every migration,
+and building the reference schema each time takes most of it:
+60 models and 300 migrations take 121 s, against 4.5 s for `migrate`;
+100 models and 122 migrations take 75 s, against 29 s.
+Skipping migrations of built-in operations would miss drift such as testapp's 0005.
+Reusing the reference snapshot while the models' SQL is unchanged would skip the build
+only where a migration leaves the schema alone: 19 of those 122.
 
 ## Python 3.13
 
 `requires-python` asks for it; the code runs on whatever Django 4.2 supports.
+
+## Replaying without an empty database
+
+`check_migration_drift` refuses tables on the search path,
+so CI has to create an empty database or schema and a second local run has to drop and recreate it.
+Replaying into a scratch schema of its own that is rolled back, as `conftest.empty_schema` does for the tests, would lift that;
+extensions installed in `public` would then be off the search path.
 
 ## Other databases and schemas
 

@@ -62,6 +62,10 @@ myapp.0002_add_isbn -> myapp.0003_fix_isbn - column myapp_book.isbn character va
 means a database with `0002` applied and `0003` not differs from its migration state by that line.
 `end` as the closer means no migration closes the window.
 
+Built-in operations drift too, so every migration is compared:
+a migration that creates a foreign key and makes it one-to-one, as a squash can,
+keeps the key's index, because Django creates that index only at the end of the migration.
+
 Moving a model between apps takes a migration in each app, so correct history opens windows too,
 each closed by the migration that completes the move.
 Accept them in a baseline file, one window per line, `#` for comments:
