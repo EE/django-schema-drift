@@ -24,8 +24,9 @@ prints one line per difference, `-` for what only the models have and `+` for wh
 and exits non-zero if there is any.
 It is safe on a production database: everything it creates is rolled back,
 though it needs the privilege to create a schema.
-Index and constraint names are not compared, since renames leave old names behind harmlessly;
-nor are collations, comments, triggers, functions or views.
+Index and constraint names are compared only where `Meta` gives them, since migrations drop those by name;
+Django finds the rest by their columns, so their names drift harmlessly.
+Collations, comments, triggers, functions and views are not compared.
 
 Accept a known difference by listing its line, without the sign, in `SCHEMA_DRIFT_IGNORE`:
 

@@ -8,3 +8,7 @@ class Author(models.Model):
 class Book(models.Model):
     author = models.ForeignKey(to=Author, on_delete=models.CASCADE)
     isbn = models.CharField(max_length=20)
+
+    class Meta:
+        indexes = [models.Index(fields=['isbn'], name='book_isbn_idx')]
+        constraints = [models.UniqueConstraint(fields=['author', 'isbn'], name='book_author_isbn_uniq')]
