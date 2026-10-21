@@ -5,7 +5,7 @@ description = "Check that a PostgreSQL schema matches the Django models, and tha
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13,<4.0"
-dependencies = ["django (>=4.2,<6.0)"]
+dependencies = ["django (>=4.2,<7.0)"]
 
 [project.urls]
 Repository = "https://github.com/EE/django-schema-drift"

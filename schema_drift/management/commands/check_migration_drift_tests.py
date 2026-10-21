@@ -11,7 +11,8 @@ def test_printed_windows_are_a_baseline_that_passes(empty_schema, settings, tmp_
     with pytest.raises(CommandError):
         call_command('check_migration_drift', stdout=out)
 
-    connection.cursor().execute('DROP SCHEMA replay CASCADE; CREATE SCHEMA replay')
+    with connection.cursor() as cursor:
+        cursor.execute('DROP SCHEMA replay CASCADE; CREATE SCHEMA replay')
     baseline = tmp_path / 'baseline.txt'
     baseline.write_text('# accepted\n' + out.getvalue())
     settings.SCHEMA_DRIFT_BASELINE = baseline

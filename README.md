@@ -22,8 +22,10 @@ Add `'schema_drift'` to `INSTALLED_APPS`.
 
 prints one line per difference, `-` for what only the models have and `+` for what only the database has,
 and exits non-zero if there is any.
-It is safe on a production database: everything it creates is rolled back.
-Index and constraint names are not compared, since renames leave old names behind harmlessly.
+It is safe on a production database: everything it creates is rolled back,
+though it needs the privilege to create a schema.
+Index and constraint names are not compared, since renames leave old names behind harmlessly;
+nor are collations, comments, triggers, functions or views.
 
 Accept a known difference by listing its line, without the sign, in `SCHEMA_DRIFT_IGNORE`:
 
@@ -34,7 +36,7 @@ SCHEMA_DRIFT_IGNORE = {
 ```
 
 A test that runs `schema_drift.drift.find_drift()` on your test database,
-which is built by migrations, fails CI on any migration that leaves the schema wrong.
+which is built by migrations, fails CI when migrations leave the final schema wrong.
 
 ## Check every migration
 

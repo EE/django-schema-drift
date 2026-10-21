@@ -57,19 +57,17 @@ def find_drift(apps: Apps = installed_apps) -> tuple[set[str], set[str]]:
 
         transaction.set_rollback(True)
 
-    ignored = getattr(settings, 'SCHEMA_DRIFT_IGNORE', set())
+    ignored = set(getattr(settings, 'SCHEMA_DRIFT_IGNORE', ()))
     return reference - live - ignored, live - reference - ignored
 
 
 def find_migration_drift() -> Iterator[str]:
-    """Apply every migration to an empty database and yield each stretch of migrations that drift spans.
+    """Apply every migration to an empty database, comparing it after each with the migration state.
 
-    After each migration the database is compared with the migration state at that point.
-    `<opener> -> <closer> <side> <line>` means a database with `opener` applied and `closer` not
-    differs from its migration state by that line, `-` for a line only the state has, `+` only the database.
+    Yields `<opener> -> <closer> <side> <line>`:
+    a database with `opener` applied and `closer` not differs from its migration state by that line,
+    `-` for a line only the state has, `+` for one only the database has.
     `end` as the closer means no migration closes it.
-    Moving a model between apps takes a migration in each, so even correct history opens such windows,
-    each closed by the migration that completes the move; `settings.SCHEMA_DRIFT_BASELINE` accepts them.
     """
     executor = MigrationExecutor(connection)
     if connection.introspection.table_names():
