@@ -22,6 +22,13 @@ Add `'schema_drift'` to `INSTALLED_APPS`.
 
 prints one line per difference, `-` for what only the models have and `+` for what only the database has,
 and exits non-zero if there is any.
+An index or constraint line ends with its name, as `-- name`,
+which is what a fix creates or drops:
+
+```
++ index myapp_book USING btree (author_id) (copy 2)  -- myapp_book_author_id_idx
+```
+
 It is safe on a production database: everything it creates is rolled back,
 though it needs the privilege to create a schema.
 It gives up after waiting 2 s for a lock, rather than hold up the queries queued behind it.
@@ -29,7 +36,7 @@ Index and constraint names are compared only where `Meta` gives them, since migr
 Django finds the rest by their columns, so their names drift harmlessly.
 Collations, comments, triggers, functions and views are not compared.
 
-Accept a known difference by listing its line, without the sign, in `SCHEMA_DRIFT_IGNORE`:
+Accept a known difference by listing its line, without the sign or the name, in `SCHEMA_DRIFT_IGNORE`:
 
 ```python
 SCHEMA_DRIFT_IGNORE = {
