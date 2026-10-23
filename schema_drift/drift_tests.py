@@ -1,4 +1,5 @@
 import pytest
+from django.core.management import CommandError
 from django.db import OperationalError, connection, connections
 
 from schema_drift import drift
@@ -81,5 +82,5 @@ def test_gives_up_on_a_locked_table_instead_of_queueing(monkeypatch):
 
 @pytest.mark.django_db
 def test_refuses_to_replay_migrations_on_a_database_with_tables():
-    with pytest.raises(RuntimeError, match='needs an empty one'):
+    with pytest.raises(CommandError, match='needs an empty database'):
         list(find_migration_drift())

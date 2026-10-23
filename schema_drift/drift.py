@@ -21,6 +21,7 @@ from django.apps import apps as installed_apps
 from django.apps.registry import Apps
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
+from django.core.management.base import CommandError
 from django.db import DatabaseError, connection, transaction
 from django.db.backends.utils import CursorWrapper
 from django.db.migrations.executor import MigrationExecutor
@@ -77,7 +78,8 @@ def find_migration_drift() -> Iterator[str]:
     """
     executor = MigrationExecutor(connection)
     if connection.introspection.table_names():
-        raise RuntimeError('find_migration_drift migrates the database, so it needs an empty one.')
+        # A `CommandError`, so `check_migration_drift` says this in one line rather than a traceback.
+        raise CommandError('Replaying migrations needs an empty database; this one has tables on the search path.')
     state = ProjectState(real_apps=executor.loader.unmigrated_apps)
     opened: dict[tuple[str, str], str] = {}
     for migration, _ in executor.migration_plan(executor.loader.graph.leaf_nodes(), clean_start=True):
