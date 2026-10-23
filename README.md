@@ -89,6 +89,46 @@ means a database between them is broken in a way nothing else will show.
 Migrations that do not depend on each other can be applied in more than one order;
 the check follows the one Django's own `migrate` picks.
 
+## What to run when
+
+Your databases come from two histories.
+Fresh ones (tests, CI, review apps) run today's migration files;
+deployed ones ran the files that existed when each migration was new, and maybe a fix made by hand.
+`check_migration_drift` checks the first, `check_schema_drift` run on a deployed database the second.
+
+### In CI and before pushing
+
+The `find_drift()` test costs one schema build;
+`check_migration_drift` also catches what a later migration hides, and takes longer on a long history.
+Run it locally after writing a `RunSQL` or `SeparateDatabaseAndState`, or moving a model between apps:
+these are where the database and the state part.
+
+### When squashing
+
+A squash merges a create with the alters that follow it,
+and can build a different schema while `makemigrations --check` stays green,
+as the one-to-one example above does.
+Check both histories:
+
+- On a database migrated with the old files, check out the squash:
+  `migrate` has nothing to apply, and `check_schema_drift` prints nothing.
+- On an empty database, `check_migration_drift` passes,
+  and `--update-baseline` drops the windows the squash folded away.
+
+### On a deployed database
+
+Run `check_schema_drift` on production and staging, and again before a squash.
+It finds what CI cannot: a fix made by hand, an index nobody dropped,
+a foreign key a `RunSQL` re-added without `DEFERRABLE INITIALLY DEFERRED`.
+Fix each with a migration or list it in `SCHEMA_DRIFT_IGNORE`.
+A squash builds what the models say,
+so a difference left in production stays one against every fresh database.
+
+Without access to the server, replay its history:
+migrate a scratch database at a commit from before any squash, check out today's code, migrate,
+and run `check_schema_drift`.
+That finds what the history left, though not what was done by hand.
+
 ## Development
 
 ```bash
