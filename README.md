@@ -14,13 +14,15 @@ PostgreSQL only.
 
 Add `'schema_drift'` to `INSTALLED_APPS`.
 
-## Check a database against the models
+## Check a database against its migrations
 
 ```bash
 ./manage.py check_schema_drift
 ```
 
-prints one line per difference, `-` for what only the models have and `+` for what only the database has,
+compares the database with the migrations its `django_migrations` lists as applied,
+so one behind the code is not reported for what its pending migrations will do.
+It prints one line per difference, `-` for what only the migrations have and `+` for what only the database has,
 and exits non-zero if there is any.
 It is safe on a production database: everything it creates is rolled back,
 though it needs the privilege to create a schema.
