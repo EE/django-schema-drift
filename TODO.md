@@ -35,13 +35,6 @@ only where a migration leaves the schema alone: 19 of those 122.
 
 `requires-python` asks for it; the code runs on whatever Django 4.2 supports.
 
-## Replaying without an empty database
-
-`check_migration_drift` refuses tables on the search path,
-so CI has to create an empty database or schema and a second local run has to drop and recreate it.
-Replaying into a scratch schema of its own that is rolled back, as `conftest.empty_schema` does for the tests, would lift that;
-extensions installed in `public` would then be off the search path.
-
 ## Other databases and schemas
 
 There is no `--database`, and only the current schema is compared.
