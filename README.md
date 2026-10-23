@@ -49,7 +49,8 @@ the final schema is fine, and a database that stops in between is not.
 ./manage.py check_migration_drift
 ```
 
-applies every migration to an **empty** database or schema (it refuses one with tables on the search path)
+applies every migration to a scratch database it creates beside the configured one and drops afterwards,
+so it needs the privilege to create a database,
 and after each compares the database with the migration state at that point.
 It runs them as `migrate` would, `RunPython` included,
 so run it with settings whose caches, storage and mail are not production's.
@@ -74,13 +75,14 @@ Accept them in a baseline file, one window per line, `#` for comments:
 SCHEMA_DRIFT_BASELINE = BASE_DIR / 'schema_drift_baseline.txt'
 ```
 
-The command prints windows in the baseline's format, so
+The command fails on windows the baseline does not list, printing them in its format,
+and on baseline lines it no longer observes.
 
 ```bash
-./manage.py check_migration_drift >> schema_drift_baseline.txt
+./manage.py check_migration_drift --update-baseline
 ```
 
-accepts everything it reports.
+adds the new windows to the baseline and drops the stale lines, keeping comments.
 Review what you accept: a window whose ends belong to two different moves
 means a database between them is broken in a way nothing else will show.
 
